@@ -5,6 +5,8 @@
 #include <memory>
 #include <QDesktopWidget>
 #include <QFile>
+#include <thread>
+#include <QThread>
 #include <QMessageBox>
 #include <QDebug>
 
@@ -17,7 +19,7 @@ AskWidget::AskWidget(DirectoryIndex const& _data, int entries, int changed, QWid
     ui(new Ui::AskWidget)
 {
     progress = 0;
-    worker_thread = nullptr;
+    //worker_thread = nullptr;
     ui->setupUi(this);
     ui->progressBar->setMaximum(entries);
     ui->progressBar->setValue(0);
@@ -35,9 +37,8 @@ AskWidget::AskWidget(DirectoryIndex const& _data, int entries, int changed, QWid
 void AskWidget::updateProgress(QString entryPath) {
 
     ui->progressBar->setValue(++progress);
-    if (ui->progressBar->isMaximized()) {
-        progress = 0;
-        ui->progressBar->setValue(0);
+    if (progress == ui->progressBar->maximum()) {
+        emit Done();
     }
     if (!entryPath.isEmpty()) {
         QListWidgetItem *newItem = new QListWidgetItem;
@@ -45,7 +46,7 @@ void AskWidget::updateProgress(QString entryPath) {
         ui->listWidget->insertItem(entriesCount++, newItem);
     }
 }
-
+/*
 void AskWidget::deleteThread() {
     if (worker_thread != nullptr) {
         worker_thread->quit();
@@ -54,7 +55,7 @@ void AskWidget::deleteThread() {
         worker_thread = nullptr;
     }
 }
-
+*/
 void AskWidget::checkZero() {
     if (entriesCount == 0) {
         QListWidgetItem *newItem = new QListWidgetItem;
@@ -64,7 +65,34 @@ void AskWidget::checkZero() {
 }
 
 void AskWidget::searchSubstrings() {
-    entriesCount = 0;
+    entriesCount = progress = 0;
+    ui->progressBar->setValue(0);
+    if (ui->query->text().size() >= FileIndexer::SUBSTRING_SIZE) {
+        ui->listWidget->clear();
+        int threadsCount = std::thread::hardware_concurrency();
+        threadsCount = std::min(threadsCount, (int)data.size());
+        QVector <int> bounds(1, 0);
+        for (int i = 0;i < threadsCount - 1; i++) bounds.push_back(bounds.back() + (int)data.size() / threadsCount);
+        bounds.push_back(data.size());
+        connect(this, &AskWidget::Done, this, &AskWidget::checkZero);
+
+        for (int i = 0; i < threadsCount; i++) {
+            QThread *thread = new QThread;
+            Searcher *searcher = new Searcher(&data, ui->query->text(), bounds[i], bounds[i + 1]);
+            searcher->moveToThread(thread);
+            connect(searcher, &Searcher::FileProcessed, this, &AskWidget::updateProgress);
+            connect(searcher, &Searcher::Done, thread, &QThread::quit);
+            connect(searcher, &Searcher::Done, searcher, &Searcher::deleteLater);
+            connect(thread, &QThread::started, searcher, &Searcher::DoWork);
+            threads.push_back(thread);
+            thread->start();
+        }
+    } else {
+        QMessageBox::warning(this, QString("Invalid query"),
+                                     "Query length should exceed " + QString::number(FileIndexer::SUBSTRING_SIZE),
+                                      QMessageBox::Ok);
+    }
+/*
     if (ui->query->text().size() >= FileIndexer::SUBSTRING_SIZE) {
         if (worker_thread == nullptr) {
             ui->listWidget->clear();
@@ -86,6 +114,7 @@ void AskWidget::searchSubstrings() {
                                      "Query length should exceed " + QString::number(FileIndexer::SUBSTRING_SIZE),
                                       QMessageBox::Ok);
     }
+    */
 }
 
 AskWidget::~AskWidget()

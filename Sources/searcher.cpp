@@ -2,9 +2,11 @@
 #include "../Headers/fileindexer.h"
 #include <QFile>
 
-Searcher::Searcher(DirectoryIndex *_data, QString _query) {
+Searcher::Searcher(DirectoryIndex *_data, QString _query, int _l, int _r) {
     data = _data;
     query = _query.toStdString();
+    l = _l;
+    r = _r;
 }
 
 Searcher::~Searcher() {}
@@ -20,7 +22,8 @@ void Searcher::DoWork() {
         queryHashes.push_back(queryHash);
     }
 
-    for (auto& container : *data) {
+    for (int it = l; it < r; it++) {
+        auto& container = (*data)[it];
         bool similar = true;
         for (auto& hash : queryHashes) {
            similar |= container.contains(hash);

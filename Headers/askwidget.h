@@ -20,13 +20,14 @@ public:
 public slots:
     void searchSubstrings();
     void updateProgress(QString);
-    void deleteThread();
+    //void deleteThread();
     void checkZero();
     void updateChanged();
 signals:
+    void Done();
     void FileProcessed(QString);
 private:
-    QThread *worker_thread;
+    QVector <QThread *> threads;
     DirectoryIndex data;
     int progress, entriesCount, changedCount;
 };

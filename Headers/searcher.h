@@ -6,7 +6,8 @@
 struct Searcher : public QObject {
     Q_OBJECT
 public:
-    explicit Searcher(DirectoryIndex *_data, QString query);
+    //explicit Searcher(DirectoryIndex *_data, QString query);
+    explicit Searcher(DirectoryIndex *_data, QString query, int l, int r);
     ~Searcher();
 public slots:
     void DoWork();
@@ -16,6 +17,7 @@ signals:
 private:
     DirectoryIndex *data;
     std::string query;
+    int l, r;
 };
 
 #endif //SEARCHER_H
