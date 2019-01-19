@@ -79,7 +79,7 @@ void MainWindow::ask(DirectoryIndex index) {
                 "ms";
     AskWidget *askWidget = new AskWidget(index, files_count, changed_count);
 
-    connect(watcher, &QFileSystemWatcher::fileChanged, askWidget, &AskWidget::updateChanged);
+    connect(watcher, &QFileSystemWatcher::directoryChanged, askWidget, &AskWidget::updateChanged);
     connect(askWidget->ui->reindexButton, &QPushButton::clicked, askWidget, &QWidget::close);
     connect(askWidget->ui->reindexButton, &QPushButton::clicked, this, &MainWindow::on_scanButton_clicked);
     reset_progress();
@@ -93,7 +93,9 @@ int MainWindow::count() {
         QFileInfo file_info(it.next());
         if (file_info.isFile()) {
            result++;
-           watcher->addPath(file_info.absoluteFilePath());
+        }
+        if (file_info.isDir()) {
+            watcher->addPath(file_info.absoluteFilePath());
         }
     }
     return result;
@@ -112,7 +114,7 @@ void MainWindow::update_changed() {
 void MainWindow::on_scanButton_clicked()
 {
     if (indexing_thread == nullptr) {
-        watcher->removePaths(watcher->files());
+        if (!watcher->directories().isEmpty()) watcher->removePaths(watcher->directories());
 
         begin = std::chrono::steady_clock::now();
 
@@ -129,7 +131,7 @@ void MainWindow::on_scanButton_clicked()
         connect(indexer, &Indexer::Done, indexer, &Indexer::deleteLater);
         connect(indexer, &Indexer::log, this, &MainWindow::list_error);
         connect(indexing_thread, &QThread::started, indexer, &Indexer::IndexDirectory);
-        connect(watcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::update_changed);
+        connect(watcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::update_changed);
         indexing_thread->start();
     }
 }

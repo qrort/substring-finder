@@ -9,7 +9,7 @@
 #include <QDebug>
 
 void AskWidget::updateChanged() {
-    ui->warn->setText(QString::number(++changedCount) + " files are changed during search.");
+    ui->warn->setText(QString::number(++changedCount) + " directories are changed during search.");
 }
 
 AskWidget::AskWidget(DirectoryIndex const& _data, int entries, int changed, QWidget *parent) :
