@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QFileSystemModel>
+#include <QFileSystemWatcher>
 #include <QThread>
 #include "fileindexcontainer.h"
 #include <chrono>
@@ -31,14 +32,18 @@ private slots:
 
     void update_progress();
 
+    void update_changed();
+
     void list_error(QString);
 private:
     std::chrono::steady_clock::time_point begin;
     Ui::MainWindow *ui;
     QFileSystemModel *model;
+    QFileSystemWatcher *watcher;
     QDir selected_directory;
-    QThread *indexing_thread, *watcher_thread;
-    int progress, errors, files_count;
+    QThread *indexing_thread;
+    int progress, errors, files_count, changed_count;
+
 
     void show_directory();
     void set_selected_directory(const QDir & dir);

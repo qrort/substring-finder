@@ -8,18 +8,24 @@
 #include <QMessageBox>
 #include <QDebug>
 
-AskWidget::AskWidget(DirectoryIndex const& _data, int count, QWidget *parent) :
+void AskWidget::updateChanged() {
+    ui->warn->setText(QString::number(++changedCount) + " files are changed during search.");
+}
+
+AskWidget::AskWidget(DirectoryIndex const& _data, int entries, int changed, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::AskWidget)
 {
     progress = 0;
     worker_thread = nullptr;
     ui->setupUi(this);
-    ui->progressBar->setMaximum(count);
+    ui->progressBar->setMaximum(entries);
     ui->progressBar->setValue(0);
 
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, 3 * size() / 2, qApp->desktop()->availableGeometry()));
     data = _data;
+    changedCount = changed - 1;
+    updateChanged();
     setWindowTitle("Search");
     connect(ui->searchButton, &QPushButton::clicked, this, &AskWidget::searchSubstrings);
     connect(this, &AskWidget::FileProcessed, this, &AskWidget::updateProgress);

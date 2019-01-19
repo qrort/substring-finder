@@ -32,7 +32,7 @@ void Searcher::DoWork() {
             std::string text = file.readAll().toStdString();
             for (int i = 0; i < (int)text.size() - (int)query.size() + 1; i++) {
                 bool ok = true;
-                for (int j = i; j < i + query.size(); j++) ok &= (text[j] == query[j - i]);
+                for (int j = i; j < i + (int)query.size(); j++) ok &= (text[j] == query[j - i]);
                 if (ok) {
                     in = true;
                     break;

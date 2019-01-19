@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, 3 * size() / 2, qApp->desktop()->availableGeometry()));
     model = new QFileSystemModel(this);
+    watcher = new QFileSystemWatcher(this);
     model->setRootPath(QDir::homePath());
 
     indexing_thread = nullptr;
@@ -76,7 +77,11 @@ void MainWindow::ask(DirectoryIndex index) {
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     qDebug() << QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()) +
                 "ms";
-    AskWidget *askWidget = new AskWidget(index, files_count);
+    AskWidget *askWidget = new AskWidget(index, files_count, changed_count);
+
+    connect(watcher, &QFileSystemWatcher::fileChanged, askWidget, &AskWidget::updateChanged);
+    connect(askWidget->ui->reindexButton, &QPushButton::clicked, askWidget, &QWidget::close);
+    connect(askWidget->ui->reindexButton, &QPushButton::clicked, this, &MainWindow::on_scanButton_clicked);
     reset_progress();
     askWidget->show();
 }
@@ -86,7 +91,10 @@ int MainWindow::count() {
     QDirIterator it(selected_directory.absolutePath(), QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QFileInfo file_info(it.next());
-        if (file_info.isFile()) result++;
+        if (file_info.isFile()) {
+           result++;
+           watcher->addPath(file_info.absoluteFilePath());
+        }
     }
     return result;
 }
@@ -97,15 +105,20 @@ void MainWindow::list_error(QString message) {
     ui->errorList->insertItem(errors++, newItem);
 }
 
+void MainWindow::update_changed() {
+    changed_count++;
+}
+
 void MainWindow::on_scanButton_clicked()
 {
     if (indexing_thread == nullptr) {
+        watcher->removePaths(watcher->files());
 
         begin = std::chrono::steady_clock::now();
 
         files_count = count();
         ui->progressBar->setMaximum(files_count);
-        progress = 0;
+        progress = changed_count = 0;
 
         indexing_thread = new QThread;
         Indexer *indexer = new Indexer(selected_directory);
@@ -116,6 +129,7 @@ void MainWindow::on_scanButton_clicked()
         connect(indexer, &Indexer::Done, indexer, &Indexer::deleteLater);
         connect(indexer, &Indexer::log, this, &MainWindow::list_error);
         connect(indexing_thread, &QThread::started, indexer, &Indexer::IndexDirectory);
+        connect(watcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::update_changed);
         indexing_thread->start();
     }
 }
