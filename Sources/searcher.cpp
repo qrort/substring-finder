@@ -28,6 +28,7 @@ void Searcher::DoWork() {
         for (auto& hash : queryHashes) {
            similar |= container.contains(hash);
         }
+        QString entryPath = "";
         if (similar) {
             bool in = false;
             QFile file(container.getFilePath());
@@ -35,19 +36,21 @@ void Searcher::DoWork() {
             std::string text = file.readAll().toStdString();
             for (int i = 0; i < (int)text.size() - (int)query.size() + 1; i++) {
                 bool ok = true;
-                for (int j = i; j < i + (int)query.size(); j++) ok &= (text[j] == query[j - i]);
+                for (int j = i; j < i + (int)query.size(); j++) {
+                   ok &= (text[j] == query[j - i]);
+                   if (!ok) break;
+                }
                 if (ok) {
                     in = true;
                     break;
                 }
             }
             file.close();
-            QString entryPath = "";
             if (in) {
                 entryPath = container.getFilePath();
             }
-            emit FileProcessed(entryPath);
         }
+        emit FileProcessed(entryPath);
     }
     emit Done();
 }

@@ -86,6 +86,8 @@ void MainWindow::ask(DirectoryIndex index) {
     askWidget->show();
 }
 
+
+
 int MainWindow::count() {
     int result = 0;
     QDirIterator it(selected_directory.absolutePath(), QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDirIterator::Subdirectories);
@@ -105,6 +107,7 @@ void MainWindow::list_error(QString message) {
     QListWidgetItem *newItem = new QListWidgetItem;
     newItem->setText(message);
     ui->errorList->insertItem(errors++, newItem);
+    files_count--;
 }
 
 void MainWindow::update_changed() {

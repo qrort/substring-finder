@@ -44,7 +44,6 @@ private:
     QThread *indexing_thread;
     int progress, errors, files_count, changed_count;
 
-
     void show_directory();
     void set_selected_directory(const QDir & dir);
     void reset_progress();

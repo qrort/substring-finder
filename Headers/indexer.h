@@ -8,6 +8,7 @@ class Indexer : public QObject {
     Q_OBJECT
 public:
     explicit Indexer(const QDir & _dir);
+    bool isOpenable(const QFileInfo & file);
 public slots:
     void IndexDirectory();
     void updateProgressBar();
@@ -17,7 +18,6 @@ signals:
     void Done(DirectoryIndex);
 private:
     QDir dir;
-    bool isOpenable(const QFileInfo & file);
 };
 
 #endif //INDEXER_H

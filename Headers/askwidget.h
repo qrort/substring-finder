@@ -20,7 +20,6 @@ public:
 public slots:
     void searchSubstrings();
     void updateProgress(QString);
-    //void deleteThread();
     void checkZero();
     void updateChanged();
 signals:
