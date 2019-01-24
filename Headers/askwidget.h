@@ -22,9 +22,13 @@ public slots:
     void updateProgress(QString);
     void checkZero();
     void updateChanged();
+    void sortEntries();
 signals:
     void Done();
     void FileProcessed(QString);
+private slots:
+    void on_query_returnPressed();
+
 private:
     QVector <QThread *> threads;
     DirectoryIndex data;

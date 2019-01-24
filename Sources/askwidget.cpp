@@ -29,8 +29,25 @@ AskWidget::AskWidget(DirectoryIndex const& _data, int entries, int changed, QWid
     updateChanged();
     setWindowTitle("Search");
     connect(ui->searchButton, &QPushButton::clicked, this, &AskWidget::searchSubstrings);
+    connect(ui->query, &QLineEdit::returnPressed, this, &AskWidget::searchSubstrings);
+    connect(ui->sortButton, &QPushButton::clicked, this, &AskWidget::sortEntries);
     connect(this, &AskWidget::FileProcessed, this, &AskWidget::updateProgress);
     qRegisterMetaType<QString>("QString");
+}
+
+void AskWidget::sortEntries() {
+    QVector <QString> items;
+    for (int i = 0; i < ui->listWidget->count(); i++) {
+        items.push_back(ui->listWidget->item(i)->text());
+    }
+    ui->listWidget->clear();
+    entriesCount = 0;
+    qSort(items.begin(), items.end());
+    for (QString path : items) {
+        QListWidgetItem *newItem = new QListWidgetItem;
+        newItem->setText(path);
+        ui->listWidget->insertItem(entriesCount++, newItem);
+    }
 }
 
 void AskWidget::updateProgress(QString entryPath) {
@@ -43,9 +60,9 @@ void AskWidget::updateProgress(QString entryPath) {
     }
     if (progress == ui->progressBar->maximum()) {
         emit Done();
-        QMessageBox::information(this, QString("Done"),
-                                     "GJ",
-                                      QMessageBox::Ok);
+       // QMessageBox::information(this, QString("Done"),
+       //                              "GJ",
+       //                               QMessageBox::Ok);
     }
 }
 
@@ -89,4 +106,9 @@ void AskWidget::searchSubstrings() {
 AskWidget::~AskWidget()
 {
     delete ui;
+}
+
+void AskWidget::on_query_returnPressed()
+{
+
 }

@@ -28,23 +28,16 @@ void Indexer::updateProgressBar() {
 }
 
 void Indexer::IndexDirectory() {
-
     QDirIterator it(dir.absolutePath(), QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDirIterator::Subdirectories);
-
     QVector <QString> files;
-
     while (it.hasNext()) {
         if (QThread::currentThread()->isInterruptionRequested()) return;
-
         QFileInfo fileInfo(it.next());
-        if (fileInfo.isFile()) {
-            if (isOpenable(fileInfo)) {
-                files.push_back(fileInfo.absoluteFilePath());
-            } else emit FileIndexed();
-        }
+        if (isOpenable(fileInfo)) {
+            files.push_back(fileInfo.absoluteFilePath());
+        } else emit FileIndexed();
     }
     FileIndexer *fileIndexer = new FileIndexer(files);
-
     connect(fileIndexer, &FileIndexer::FileIndexed, this, &Indexer::updateProgressBar);
     connect(fileIndexer, &FileIndexer::Done, this, &Indexer::Done);
     connect(fileIndexer, &FileIndexer::Done, fileIndexer, &FileIndexer::deleteLater);

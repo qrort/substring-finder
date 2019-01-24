@@ -88,7 +88,7 @@ void MainWindow::ask(DirectoryIndex index) {
 
 
 
-int MainWindow::count() {
+int MainWindow::count(QStringList & watches) {
     int result = 0;
     QDirIterator it(selected_directory.absolutePath(), QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDirIterator::Subdirectories);
     while (it.hasNext()) {
@@ -96,8 +96,9 @@ int MainWindow::count() {
         if (file_info.isFile()) {
            result++;
         }
-        if (file_info.isDir()) {
-            watcher->addPath(file_info.absoluteFilePath());
+        if (file_info.isDir() && watches.size() < 8000) {
+            watches.push_back(file_info.absoluteFilePath());
+          //  watcher->addPath(file_info.absoluteFilePath());
         }
     }
     return result;
@@ -120,11 +121,12 @@ void MainWindow::on_scanButton_clicked()
         if (!watcher->directories().isEmpty()) watcher->removePaths(watcher->directories());
 
         begin = std::chrono::steady_clock::now();
-
-        files_count = count();
+        QStringList watches;
+        files_count = count(watches);
+        watcher->addPaths(watches);
         ui->progressBar->setMaximum(files_count);
-        progress = changed_count = 0;
-
+        errors = progress = changed_count = 0;
+        ui->errorList->clear();
         indexing_thread = new QThread;
         Indexer *indexer = new Indexer(selected_directory);
         indexer->moveToThread(indexing_thread);

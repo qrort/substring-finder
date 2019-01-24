@@ -47,7 +47,7 @@ private:
     void show_directory();
     void set_selected_directory(const QDir & dir);
     void reset_progress();
-    int count();
+    int count(QStringList & watches);
 };
 
 #endif // MAINWINDOW_H

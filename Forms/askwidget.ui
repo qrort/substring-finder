@@ -16,53 +16,60 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="5" column="0" colspan="3">
+     <item row="4" column="0" colspan="3">
       <widget class="QProgressBar" name="progressBar">
        <property name="value">
         <number>24</number>
        </property>
       </widget>
      </item>
-     <item row="4" column="0" colspan="4">
+     <item row="3" column="0" colspan="4">
       <widget class="QListWidget" name="listWidget"/>
      </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Substring query:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QLineEdit" name="query">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
+     <item row="5" column="0">
       <widget class="QPushButton" name="reindexButton">
        <property name="text">
         <string>Reindex</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0" colspan="2">
+     <item row="5" column="2">
+      <widget class="QLineEdit" name="warn"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="sortButton">
+       <property name="text">
+        <string>Sort</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QPushButton" name="searchButton">
        <property name="text">
         <string>Search</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
+     <item row="1" column="1" colspan="2">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Substring query:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Files:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1" colspan="2">
-      <widget class="QLineEdit" name="warn"/>
+     <item row="2" column="1" colspan="2">
+      <widget class="QLineEdit" name="query">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
