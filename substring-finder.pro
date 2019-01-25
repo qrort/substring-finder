@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = substring-finder
 TEMPLATE = app
 
+QMAKE_CXXFLAGS_RELEASE += -O3
+
 SOURCES += Sources/main.cpp\
         Sources/mainwindow.cpp\
         Sources/fileindexer.cpp\
