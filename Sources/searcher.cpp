@@ -1,8 +1,6 @@
 #include "../Headers/searcher.h"
 #include "../Headers/fileindexer.h"
 #include <QFile>
-#include <QDebug>
-#include <iostream>
 
 Searcher::Searcher(DirectoryIndex *_data, QString _query, int _l, int _r) {
     data = _data;
@@ -14,8 +12,6 @@ Searcher::Searcher(DirectoryIndex *_data, QString _query, int _l, int _r) {
 Searcher::~Searcher() {}
 
 void Searcher::DoWork() {
-    std::cerr << query << '\n';
-    std::cerr << query.size() << '\n';
     QVector <uint32_t> queryHashes;
     for (int i = 0; i < (int)query.size() - FileIndexer::SUBSTRING_SIZE + 1; i++) {
         uint32_t queryHash = 0;
@@ -28,7 +24,6 @@ void Searcher::DoWork() {
 
     for (int it = l; it < r; it++) {
         auto& container = (*data)[it];
-        container.prepare();
         bool similar = true;
         for (auto& hash : queryHashes) {
            similar &= container.contains(hash);

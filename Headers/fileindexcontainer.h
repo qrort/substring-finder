@@ -10,6 +10,7 @@ public:
     FileIndexContainer() : filePath(""), ready(false) {}
     FileIndexContainer(QString filePath, QSet <uint32_t> & set) : filePath(filePath) {
         for (auto el : set) substrings.push_back(el);
+        qSort(substrings.begin(), substrings.end());
     }
     void insert(uint32_t substring_hash) {
         substrings.push_back(substring_hash);
@@ -28,12 +29,6 @@ public:
     }
     bool isEmpty() {
         return substrings.isEmpty();
-    }
-    void prepare() {
-        if (!ready) {
-            ready = true;
-            qSort(substrings.begin(), substrings.end());
-        }
     }
 
 private:
