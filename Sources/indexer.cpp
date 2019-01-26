@@ -10,17 +10,15 @@ Indexer::Indexer(const QDir &_dir) {
 }
 
 bool Indexer::isOpenable(const QFileInfo & file) {
-    if (file.isFile()) {
-        if (!(QFile::permissions(file.filePath()) & QFile::ReadUser)) {
-           emit log("Do not have permission for opening" + file.filePath());
-           return false;
-        }
-        if (!file.isReadable()) {
-           emit log(file.filePath() + "is not readable");
-           return false;
-        }
-        return true;
-    } else return false;
+    if (!(QFile::permissions(file.filePath()) & QFile::ReadUser)) {
+       emit log("Do not have permission for opening" + file.filePath());
+       return false;
+    }
+    if (!file.isReadable()) {
+       emit log(file.filePath() + "is not readable");
+       return false;
+    }
+    return true;
 }
 
 void Indexer::updateProgressBar() {
@@ -33,9 +31,11 @@ void Indexer::IndexDirectory() {
     while (it.hasNext()) {
         if (QThread::currentThread()->isInterruptionRequested()) return;
         QFileInfo fileInfo(it.next());
-        if (isOpenable(fileInfo)) {
-            files.push_back(fileInfo.absoluteFilePath());
-        } else emit FileIndexed();
+        if (fileInfo.isFile()) {
+            if (isOpenable(fileInfo)) {
+                files.push_back(fileInfo.absoluteFilePath());
+            } else emit FileIndexed();
+        }
     }
     FileIndexer *fileIndexer = new FileIndexer(files);
     connect(fileIndexer, &FileIndexer::FileIndexed, this, &Indexer::updateProgressBar);

@@ -83,6 +83,7 @@ void MainWindow::ask(DirectoryIndex index) {
     connect(askWidget->ui->reindexButton, &QPushButton::clicked, askWidget, &QWidget::close);
     connect(askWidget->ui->reindexButton, &QPushButton::clicked, this, &MainWindow::on_scanButton_clicked);
     reset_progress();
+    askWidget->setWindowModality(Qt::ApplicationModal);
     askWidget->show();
 }
 
