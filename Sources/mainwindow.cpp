@@ -18,7 +18,8 @@ void MainWindow::set_selected_directory(const QDir & dir) {
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    indexing_thread(nullptr)
 {
     ui->setupUi(this);
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, 3 * size() / 2, qApp->desktop()->availableGeometry()));
@@ -26,7 +27,6 @@ MainWindow::MainWindow(QWidget *parent) :
     watcher = new QFileSystemWatcher(this);
     model->setRootPath(QDir::homePath());
 
-    indexing_thread = nullptr;
     errors = progress = 0;
     ui->progressBar->setValue(0);
     ui->treeView->setModel(model);
@@ -39,20 +39,27 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    terminate_thread();
     delete ui;
 }
 
 void MainWindow::on_selectButton_clicked()
 {
-
-
-
     QString dir = QFileDialog::getExistingDirectory(this, "Select Directory for Scanning",
                                                         selected_directory.absolutePath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
     if (!dir.isEmpty()) {
         set_selected_directory(QDir(dir));
          ui->treeView->setRootIndex(model->index(dir));
+    }
+}
+
+void MainWindow::terminate_thread() {
+    if (indexing_thread != nullptr) {
+        indexing_thread->quit();
+        indexing_thread->wait();
+        delete indexing_thread;
+        indexing_thread = nullptr;
     }
 }
 
@@ -65,15 +72,14 @@ void MainWindow::update_progress() {
 }
 
 void MainWindow::reset_progress() {
-    indexing_thread->quit();
-    indexing_thread->wait();
     progress = 0;
     ui->progressBar->setValue(0);
-    delete indexing_thread;
-    indexing_thread = nullptr;
 }
 
 void MainWindow::ask(DirectoryIndex index) {
+    reset_progress();
+    terminate_thread();
+
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     qDebug() << QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()) +
                 "ms";
@@ -82,7 +88,6 @@ void MainWindow::ask(DirectoryIndex index) {
     connect(watcher, &QFileSystemWatcher::directoryChanged, askWidget, &AskWidget::updateChanged);
     connect(askWidget->ui->reindexButton, &QPushButton::clicked, askWidget, &QWidget::close);
     connect(askWidget->ui->reindexButton, &QPushButton::clicked, this, &MainWindow::on_scanButton_clicked);
-    reset_progress();
     askWidget->setWindowModality(Qt::ApplicationModal);
     askWidget->show();
 }
@@ -99,7 +104,6 @@ int MainWindow::count(QStringList & watches) {
         }
         if (file_info.isDir() && watches.size() < 8000) {
             watches.push_back(file_info.absoluteFilePath());
-          //  watcher->addPath(file_info.absoluteFilePath());
         }
     }
     return result;
@@ -147,6 +151,7 @@ void MainWindow::on_cancelButton_clicked()
     if (indexing_thread != nullptr && indexing_thread->isRunning()) {
         indexing_thread->requestInterruption();
         reset_progress();
+        terminate_thread();
     }
 }
 
