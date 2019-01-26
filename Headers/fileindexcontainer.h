@@ -7,7 +7,7 @@
 
 class FileIndexContainer {
 public:
-    FileIndexContainer() : filePath("") {}
+    FileIndexContainer() : filePath(""), ready(false) {}
     FileIndexContainer(QString filePath, QSet <uint32_t> & set) : filePath(filePath) {
         for (auto el : set) substrings.push_back(el);
     }
@@ -29,9 +29,17 @@ public:
     bool isEmpty() {
         return substrings.isEmpty();
     }
+    void prepare() {
+        if (!ready) {
+            ready = true;
+            qSort(substrings.begin(), substrings.end());
+        }
+    }
+
 private:
     QString filePath;
     QVector <uint32_t> substrings;
+    bool ready;
 };
 
 using DirectoryIndex = QVector <FileIndexContainer>;

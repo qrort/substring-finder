@@ -81,6 +81,7 @@ void AskWidget::searchSubstrings() {
         ui->listWidget->clear();
         int threadsCount = std::thread::hardware_concurrency();
         threadsCount = std::min(threadsCount, (int)data.size());
+        threadsCount = 1;
         QVector <int> bounds(1, 0);
         for (int i = 0;i < threadsCount - 1; i++) bounds.push_back(bounds.back() + (int)data.size() / threadsCount);
         bounds.push_back(data.size());
