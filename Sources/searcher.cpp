@@ -26,7 +26,7 @@ void Searcher::DoWork() {
         auto& container = (*data)[it];
         bool similar = true;
         for (auto& hash : queryHashes) {
-           similar |= container.contains(hash);
+           similar &= container.contains(hash);
         }
         QString entryPath = "";
         if (similar) {
