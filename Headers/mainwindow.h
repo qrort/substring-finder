@@ -35,6 +35,8 @@ private slots:
     void update_changed();
 
     void list_error(QString);
+
+    void terminate_thread();
 private:
     std::chrono::steady_clock::time_point begin;
     Ui::MainWindow *ui;
