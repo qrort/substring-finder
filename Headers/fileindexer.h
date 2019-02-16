@@ -14,6 +14,7 @@ signals:
     void FileIndexed();
     void Done(DirectoryIndex);
 public:
+    static uint32_t _hash(QVector <char> a);
     static const int BUFFER_SIZE = 1 << 12;
     static const int SUBSTRING_SIZE = 3; //if set to x > 4, appropriate changes to substring_hash type should be done
     static const int BINARY_FILE_BOUND = 30000;

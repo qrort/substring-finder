@@ -1,6 +1,8 @@
 #include "../Headers/searcher.h"
 #include "../Headers/fileindexer.h"
 #include <QFile>
+#include <cassert>
+#include <QDebug>
 
 Searcher::Searcher(DirectoryIndex *_data, QString _query, int _l, int _r) {
     data = _data;
@@ -15,10 +17,11 @@ void Searcher::DoWork() {
     QVector <uint32_t> queryHashes;
     for (int i = 0; i < (int)query.size() - FileIndexer::SUBSTRING_SIZE + 1; i++) {
         uint32_t queryHash = 0;
-        for (int j = 0; j < FileIndexer::SUBSTRING_SIZE; j++) {
+       /* for (int j = 0; j < FileIndexer::SUBSTRING_SIZE; j++) {
             queryHash += (static_cast<unsigned char>(query[i + j]) <<
                           (1 << ((FileIndexer::SUBSTRING_SIZE - j - 1) * 8)));
-        }
+        }*/
+        queryHash = FileIndexer::_hash({query[i], query[i + 1], query[i + 2]});
         queryHashes.push_back(queryHash);
     }
 
@@ -30,6 +33,7 @@ void Searcher::DoWork() {
         }
         QString entryPath = "";
         if (similar) {
+           // qDebug() << container.getFilePath() << endl;
             bool in = false;
             QFile file(container.getFilePath());
             file.open(QIODevice::ReadOnly);
@@ -38,13 +42,19 @@ void Searcher::DoWork() {
                 bool ok = true;
                 for (int j = i; j < i + (int)query.size(); j++) {
                    ok &= (text[j] == query[j - i]);
-                   if (!ok) break;
+                   if (j == i + 2) {
+                    //   qDebug() << "almost found at index " << i << endl;
+                   }
+                   if (!ok) {
+                       break;
+                   }
                 }
                 if (ok) {
                     in = true;
                     break;
                 }
             }
+            //assert(similar && in);
             file.close();
             if (in) {
                 entryPath = container.getFilePath();

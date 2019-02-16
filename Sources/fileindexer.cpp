@@ -7,6 +7,10 @@ FileIndexer::FileIndexer(const QVector <QString> & files) {
     fileQuery = files;
 }
 
+uint32_t FileIndexer::_hash(QVector <char> a) {
+    return (a[0] << 16) + (a[1] << 8) + a[2];
+}
+
 FileIndexContainer FileIndexer::IndexFile(const QString & filePath) {
     QFile file(filePath);
     if (file.open(QIODevice::ReadOnly)) {
@@ -15,13 +19,19 @@ FileIndexContainer FileIndexer::IndexFile(const QString & filePath) {
         int prev = 0;
 
         while (int len = static_cast<int>(file.read(buf + prev * (SUBSTRING_SIZE - 1), BUFFER_SIZE))) {
-            for (int i = 0; i < len + prev * (SUBSTRING_SIZE - 1) - SUBSTRING_SIZE + 1; i++) {
+            int i = 0;
+            for (; i < len + prev * (SUBSTRING_SIZE - 1) - SUBSTRING_SIZE + 1; i++) {
                 uint32_t substringHash = 0;
-                for (int j = 0; j < SUBSTRING_SIZE; j++) {
+                substringHash = _hash({buf[i], buf[i + 1], buf[i + 2]});
+                /*for (int j = 0; j < SUBSTRING_SIZE; j++) {
                     substringHash += (static_cast<unsigned char>(buf[i + j]) << (1 << ((SUBSTRING_SIZE - j - 1) * 8)));
                 }
+                if (substringHash == 416) {
+                    qDebug() << filePath << endl << buf[i] << buf[i + 1] << buf[i + 2] << endl;
+                }*/
                 substrings.insert(substringHash);
             }
+          //  qDebug() << i;
             if (substrings.size() > BINARY_FILE_BOUND) {
                 emit FileIndexed();
                 return FileIndexContainer();
