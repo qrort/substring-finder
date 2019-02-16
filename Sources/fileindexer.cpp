@@ -12,7 +12,7 @@ FileIndexContainer FileIndexer::IndexFile(const QString & filePath) {
     if (file.open(QIODevice::ReadOnly)) {
         QSet <uint32_t> substrings;
         char buf[BUFFER_SIZE + SUBSTRING_SIZE - 1];
-        bool prev = false;
+        int prev = 0;
 
         while (int len = static_cast<int>(file.read(buf + prev * (SUBSTRING_SIZE - 1), BUFFER_SIZE))) {
             for (int i = 0; i < len + prev * (SUBSTRING_SIZE - 1) - SUBSTRING_SIZE + 1; i++) {
@@ -27,7 +27,7 @@ FileIndexContainer FileIndexer::IndexFile(const QString & filePath) {
                 return FileIndexContainer();
             }
             std::copy(buf + len - SUBSTRING_SIZE + 1, buf + len, buf);
-            prev = true;
+            prev = 1;
         }
         emit FileIndexed();
         return std::move(FileIndexContainer(filePath, substrings));
